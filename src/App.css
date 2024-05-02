@@ -48,13 +48,15 @@ footer a {
   transition: all 0.3s ease-in-out;
 }
 
-.joinBtn{
-  background-color: #4aee88;
+.joinBtn,
+.leaveBtn {
+  background-color: #4aed88;
   width: 100px;
   margin-left: auto;
 }
 
-.joinBtn:hover{
+.joinBtn:hover,
+.leaveBtn:hover {
   background-color: #2b824c;
 }
 
@@ -68,20 +70,78 @@ footer a {
   margin-bottom: 30px;
 }
 
-.createInfo{
+.createInfo {
   margin: 0 auto;
   margin-top: 20px;
-
 }
 
-.createNewBtn{
+.createNewBtn {
   color: #4aee88;
   text-decoration: none;
   border-bottom: 1px solid #4aee88;
   transition: all 0.3s ease-in-out;
 }
 
-.createNewBtn:hover, footer a:hover{
+.createNewBtn:hover,
+footer a:hover {
   color: #368654;
   border-color: #368654;
+}
+
+/* Editor page css */
+.mainWrap {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  height: 100vh;
+}
+
+.aside {
+  background-color: #1c1e29;
+  padding: 16px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.asideInner {
+  flex: 1;
+}
+
+.clientsList {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.client {
+  font-weight: bold;
+}
+
+.userName {
+  margin-top: 10px;
+}
+
+.logo {
+  border-bottom: 1px solid #424242;
+  padding-bottom: 10px;
+}
+
+.logo > img {
+  height: 60px;
+}
+
+.leaveBtn {
+  margin-top: 20px;
+  width: 100%;
+}
+
+
+/* Editor Css */
+
+.CodeMirror{
+  min-height: 100vh;
+  font-size: 20px;
+  line-height: 1.6;
+  padding-top: 20px;
 }
