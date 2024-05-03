@@ -17,6 +17,8 @@ const EditorPage = () => {
   const reactNavigator = useNavigate();
   const { roomId } = useParams();
 
+  const codeRef = useRef();
+
   const [clients, setClients] = useState([]);
 
   useEffect(() => {
@@ -46,44 +48,47 @@ const EditorPage = () => {
             console.log(`${username} joined`);
           }
 
-          setClients(clients)
+          setClients(clients);
+          socketRef.current.emit(ACTIONS.SYNC_CODE, {
+            code: codeRef.current,
+            socketId,
+          });
         }
       );
 
       //listening for disconnection
-      socketRef.current.on(ACTIONS.DISCONNECTED, ({socketId, username}) => {
-        toast.success(`${username} left the room`)
-        
-        setClients(prev => {
-          return prev.filter(singleClient => singleClient.socketId !== socketId)
-        })
-      })
+      socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
+        toast.success(`${username} left the room`);
+
+        setClients((prev) => {
+          return prev.filter(
+            (singleClient) => singleClient.socketId !== socketId
+          );
+        });
+      });
     };
 
     init();
-    
-
 
     return () => {
-      socketRef.current.disconnect()
-      socketRef.current.off(ACTIONS.JOINED)
-      socketRef.current.off(ACTIONS.DISCONNECTED)
-    }
-
+      socketRef.current.disconnect();
+      socketRef.current.off(ACTIONS.JOINED);
+      socketRef.current.off(ACTIONS.DISCONNECTED);
+    };
   }, []);
 
   const copyRoomId = async () => {
     try {
-      await window.navigator.clipboard.writeText(roomId)
-      toast.success(`Room ID has been copied to the clipboard`)
+      await window.navigator.clipboard.writeText(roomId);
+      toast.success(`Room ID has been copied to the clipboard`);
     } catch (error) {
-      toast.error(`Could not copy the room ID`)
-      console.log(error)
+      toast.error(`Could not copy the room ID`);
+      console.log(error);
     }
-  }
+  };
 
-  function leaveRoom(){
-    reactNavigator('/')
+  function leaveRoom() {
+    reactNavigator("/");
   }
 
   if (!location.state) return <Navigate to="/" />;
@@ -104,12 +109,22 @@ const EditorPage = () => {
             ))}
           </div>
         </div>
-        <button className="btn copyBtn" onClick={copyRoomId}>Copy Room ID</button>
-        <button className="btn leaveBtn" onClick={leaveRoom}>Leave</button>
+        <button className="btn copyBtn" onClick={copyRoomId}>
+          Copy Room ID
+        </button>
+        <button className="btn leaveBtn" onClick={leaveRoom}>
+          Leave
+        </button>
       </div>
 
       <div className="editorWrap">
-        <Editor socketRef={socketRef} roomId={roomId} />
+        <Editor
+          socketRef={socketRef}
+          roomId={roomId}
+          onCodeChange={(code) => {
+            codeRef.current = code;
+          }}
+        />
       </div>
     </div>
   );
