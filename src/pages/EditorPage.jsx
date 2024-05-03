@@ -2,22 +2,78 @@ import React, { useEffect, useRef, useState } from "react";
 import Client from "../components/Client";
 import Editor from "../components/Editor";
 import { initSocket } from "../socket";
+import { ACTIONS } from "../../Actions";
+import {
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
+import toast from "react-hot-toast";
 
 const EditorPage = () => {
   const socketRef = useRef();
+  const location = useLocation();
+  const reactNavigator = useNavigate();
+  const { roomId } = useParams();
+
+  const [clients, setClients] = useState([]);
 
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initSocket();
+
+      socketRef.current.on("connect_error", (err) => handleErrors(err));
+      socketRef.current.on("connect_failed", (err) => handleErrors(err));
+
+      function handleErrors(e) {
+        console.log("socket error ", e);
+        toast.error("Socket connection failed, try again later");
+        reactNavigator("/");
+      }
+
+      socketRef.current.emit(ACTIONS.JOIN, {
+        roomId,
+        username: location.state?.username,
+      });
+
+      //listening for joined users in the room
+      socketRef.current.on(
+        ACTIONS.JOINED,
+        ({ clients, username, socketId }) => {
+          if (username !== location.state?.username) {
+            toast.success(`${username} joined the room`);
+            console.log(`${username} joined`);
+          }
+
+          setClients(clients)
+        }
+      );
+
+      //listening for disconnection
+      socketRef.current.on(ACTIONS.DISCONNECTED, ({socketId, username}) => {
+        toast.success(`${username} left the room`)
+        
+        setClients(prev => {
+          return prev.filter(singleClient => singleClient.socketId !== socketId)
+        })
+      })
     };
 
     init();
+    
+
+
+    return () => {
+      socketRef.current.disconnect()
+      socketRef.current.off(ACTIONS.JOINED)
+      socketRef.current.off(ACTIONS.DISCONNECTED)
+    }
+
   }, []);
 
-  const [clients, setClients] = useState([
-    { socketId: 1, username: "Krishna" },
-    { socketId: 2, username: "John" },
-  ]);
+  if (!location.state) return <Navigate to="/" />;
+
   return (
     <div className="mainWrap">
       <div className="aside">
@@ -39,7 +95,7 @@ const EditorPage = () => {
       </div>
 
       <div className="editorWrap">
-        <Editor />
+        <Editor socketRef={socketRef} roomId={roomId} />
       </div>
     </div>
   );
